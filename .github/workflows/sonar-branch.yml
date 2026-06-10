@@ -18,11 +18,7 @@
 name: Sonar Quality Branch Analysis
 
 on:
-  push:
-    branches:
-      - master
-      - 'ignite-[0-9].[0-9]+.[0-9]+*'
-
+  workflow_dispatch:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -30,7 +26,7 @@ concurrency:
 jobs:
   sonarcloud:
     name: Sonar Analysis
-    if: github.repository == 'apache/ignite'
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -75,8 +71,7 @@ jobs:
 
       - name: Sonar Analyze Upload
         run: >
-          ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:sonar 
-          -P all-java,lgpl,examples,skip-docs
+          ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:sonar  -P all-java,lgpl,examples,skip-docs
           -Dsonar.branch.name=${{ github.ref_name }}
           -Dsonar.projectKey=apache_ignite
           -Dsonar.token=${SONARCLOUD_TOKEN}
@@ -87,3 +82,5 @@ jobs:
           JAVA_OPTS: "-XX:+UseG1GC -XX:InitialHeapSize=2g -XX:MaxHeapSize=6g -XX:+UseStringDeduplication"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONARCLOUD_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
+    strategy:
+      fail-fast: false

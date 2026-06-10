@@ -17,18 +17,20 @@
 
 name: SonarBuild
 
-on: pull_request
+on:
 
+  workflow_dispatch:
 permissions:
   contents: read
 
 concurrency:
-  group: sonar-pr-workflow-${{ github.event.pull_request.head.repo.full_name }}-${{ github.event.pull_request.head.ref }}
+  group: sonar-pr-workflow-${{ github.event.pull_request.head.repo.full_name }}-${{ github.event.pull_request.head.ref 
+    }}
   cancel-in-progress: true
 
 jobs:
   build:
-    if: github.repository == 'apache/ignite'
+    if: always()
     name: Build artifacts for Sonar Analysis
     runs-on: ubuntu-latest
     steps:
@@ -88,3 +90,5 @@ jobs:
             pr-event.txt
           if-no-files-found: error
           retention-days: 1
+    strategy:
+      fail-fast: false
