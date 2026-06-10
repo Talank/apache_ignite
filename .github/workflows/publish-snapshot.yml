@@ -20,15 +20,12 @@
 name: "Publish Apache Ignite Snapshot to Maven Snapshot Repository"
 
 on:
-  push:
-    branches:
-      - master
-
+  workflow_dispatch:
 jobs:
   deploy:
-    if: github.repository == 'apache/ignite'
+    if: always()
     name: "Deploy Apache Ignite"
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -45,3 +42,10 @@ jobs:
         env:
           NEXUS_USER: ${{ secrets.NEXUS_USER }}
           NEXUS_PW: ${{ secrets.NEXUS_PW }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+      fail-fast: false

@@ -18,19 +18,18 @@
 name: Sonar Quality Pull Request Analysis
 
 on:
-  workflow_run:
-    workflows: [SonarBuild]
-    types: [completed]
+  workflow_dispatch:
 
 concurrency:
-  group: sonar-pr-workflow-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}
+  group: sonar-pr-workflow-${{ github.event.workflow_run.head_repository.full_name }}-${{ 
+    github.event.workflow_run.head_branch }}
   cancel-in-progress: true
 
 jobs:
   sonarcloud:
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.repository == 'apache/ignite' }}
+    if: always()
     name: Sonar Analysis
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     permissions:
       contents: read
       actions: write
@@ -175,3 +174,10 @@ jobs:
               status: 'completed',
               conclusion: JOB_STATUS
             });
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+      fail-fast: false
