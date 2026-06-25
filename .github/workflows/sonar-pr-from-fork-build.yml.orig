@@ -30,10 +30,7 @@ jobs:
   build:
     if: github.repository == 'apache/ignite'
     name: Build artifacts for Sonar Analysis
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
@@ -55,22 +52,14 @@ jobs:
 
       - name: Install Libnuma
         run: sudo apt-get update && sudo apt-get install libnuma-dev
-        if: runner.os == 'Linux'
 
       - name: Build with Maven
-        if: runner.os != 'Windows'
         run: |
           ./mvnw install -P all-java,lgpl,examples,skip-docs -DskipTests -B -V
 
-      - name: Build with Maven (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          mvnw.cmd install -P all-java,lgpl,examples,skip-docs -DskipTests -B -V
-        shell: cmd
-
       - name: Prepare compiled classes artifact
         shell: bash
-        run: find . -iname "*target" -type d -exec tar -rf target.tar {} \+
+        run: find -iname "*target" -type d -exec tar -rf target.tar {} \+
 
       - name: Upload compiled classes artifact
         uses: actions/upload-artifact@v4
