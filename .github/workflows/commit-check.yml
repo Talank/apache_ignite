@@ -15,23 +15,21 @@
 
 name: Code Style, Abandoned Tests, Javadocs
 on:
-  pull_request:
-  push:
-    branches:
-      - master
-      - 'ignite-[0-9].[0-9]+.[0-9]+*'
-
+  workflow_dispatch:
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
   check-java:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        java: [ '17' ]
+        java: ['17']
+        os:
+          - ubuntu-latest
+          - ubuntu-24.04-arm
     name: Check java code on JDK ${{ matrix.java }}
     steps:
       - uses: actions/checkout@v4
@@ -49,7 +47,7 @@ jobs:
           sudo apt-get update && sudo apt-get install libnuma-dev
 
       - name: Set MAVEN_OPTS
-        if: ${{ matrix.java == '17' }}
+        if: always()
         run: |
           {
             echo 'MAVEN_OPTS<<EOF'
@@ -99,11 +97,11 @@ jobs:
           ./mvnw test-compile -Pall-java,licenses,lgpl,checkstyle,examples,scala,check-licenses -B -V
 
       - name: Run abandoned tests checks.
-        run : |
+        run: |
           ./mvnw test -Pcheck-test-suites,all-java,scala -B -V
 
       - name: Check javadocs.
-        run : |
+        run: |
           ./mvnw -DskipTests install -pl modules/tools,modules/codegen -B -V && ./mvnw initialize -Pjavadoc -B -V
 
   check-dotnet:
@@ -131,9 +129,9 @@ jobs:
       fail-fast: false
       matrix:
         cfg:
-          - { python: "3.8", toxenv: "py38" }
-          - { python: "3.9", toxenv: "py39" }
-          - { python: "3.9", toxenv: "codestyle" }
+          - {python: "3.8", toxenv: "py38"}
+          - {python: "3.9", toxenv: "py39"}
+          - {python: "3.9", toxenv: "codestyle"}
     steps:
       - uses: actions/checkout@v4
         with:
